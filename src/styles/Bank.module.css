@@ -1,0 +1,702 @@
+.bankApp {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.container {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.header {
+  background-color: #0d6efd;
+  color: white;
+  padding: 15px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.headerContent {
+  max-width: 1400px;
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.bankIcon {
+  margin-right: 10px;
+  font-size: 1.9rem;
+}
+
+.headerSubtitle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+.sectionTitle {
+  background-color: #87CEEB;
+  color: black;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitleText {
+  flex: 1;
+}
+
+.titleActions {
+  display: flex;
+  gap: 10px;
+}
+
+.actionIcon {
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 18px;
+  padding: 0 5px;
+}
+
+.actionIcon:hover {
+  color: #0d6efd;
+}
+
+.chatContainer {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  height: 500px;
+  background-color: white;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.chatContainer.dragOver {
+  border-color: #4a90e2;
+  box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+  background-color: #f0f8ff;
+}
+
+.chatInput {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: white;
+}
+
+.inputActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  gap: 10px;
+}
+
+.sendButton, .uploadButton {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.sendButton {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.sendButton:hover {
+  background-color: #0b5ed7;
+}
+
+.sendButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.uploadButton {
+  background-color: #6c757d;
+  color: white;
+}
+
+.uploadButton:hover {
+  background-color: #5c636a;
+}
+
+.actionButton {
+  background-color: #0c4c6e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 4px;
+  width: 100%;
+  text-align: center;
+  cursor: move;
+  transition: all 0.3s ease;
+}
+
+.actionButton:hover {
+  background-color: #0d5c82;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.actionButton.dragging {
+  opacity: 0.5;
+  background-color: #4a90e2;
+}
+
+.chosen {
+  background-color: #0d5c82;
+  box-shadow: 0 0 10px rgba(13, 92, 130, 0.5);
+}
+
+.eventWithActions {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  justify-content: space-between;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 5px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.editButton:hover {
+  opacity: 1;
+}
+
+.searchBox {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.mainContent {
+  display: flex;
+  gap: 20px;
+  min-height: calc(100vh - 100px);
+}
+
+.section {
+  flex: 1;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  min-height: 200px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s;
+}
+
+.section:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.buttonContainer {
+  min-height: 50px;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: rgba(255,255,255,0.5);
+  border: 1px solid #eee;
+}
+
+.dragHandle {
+  cursor: move;
+  padding: 5px;
+  margin-right: 5px;
+  color: #666;
+}
+
+.section.dragOver {
+  background-color: #e9ecef;
+  border: 2px dashed #0d6efd;
+}
+
+.chatAssistant {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.chatAssistant img {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+/* 聊天消息样式 */
+.message {
+  margin-bottom: 10px;
+  max-width: 85%;
+}
+
+.userMessage {
+  background-color: #d1e7ff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: 5px;
+  position: relative;
+}
+
+.assistantMessage {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 8px;
+  margin-right: auto;
+  margin-left: 5px;
+  position: relative;
+}
+
+.eventMessage,
+.eventComponentMessage,
+.standardEventMessage {
+  background-color: #e6f7ff;
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #0d6efd;
+  margin-right: auto;
+  margin-left: 5px;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.eventComponentMessage {
+  background-color: #f8f8f8;
+  border-left: 4px solid #6c757d;
+  margin-left: 30px;
+  width: calc(100% - 30px);
+}
+
+.standardEventMessage {
+  background-color: #f9f9f9;
+  border-left: 4px solid #28a745;
+  margin-left: 50px;
+  width: calc(100% - 50px);
+}
+
+.eventIcon {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.messageContent {
+  flex: 1;
+}
+
+.eventTitle {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.eventComponentTitle {
+  font-style: italic;
+}
+
+.standardEventTitle {
+  font-size: 0.9em;
+}
+
+.messageTime {
+  font-size: 0.8em;
+  color: #666;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.dropHint {
+  text-align: center;
+  color: #6c757d;
+  margin-top: 10px;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.formInput {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: border-color 0.3s;
+}
+
+.formInput:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+/* 没有找到的事件 */
+.noEvents {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+/* 搜索容器 */
+.searchContainer {
+  display: flex;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.searchToggle {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+/* 事件下拉菜单 */
+.eventsDropdown {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.eventItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.eventItem:hover {
+  background-color: #f0f7ff;
+}
+
+.eventItem:last-child {
+  border-bottom: none;
+}
+
+.noEvents {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* 已选事件 */
+.selectedEvents {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 100px;
+  background-color: white;
+  margin-bottom: 5px;
+}
+
+.selectedEventItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0c4c6e;
+  color: white;
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.eventText {
+  flex: 1;
+}
+
+.removeEventBtn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0 5px;
+}
+
+.removeEventBtn:hover {
+  color: #ff6b6b;
+}
+
+.noSelectedEvents {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* 弹窗样式 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.saveButton {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 拖拽时应用于body的样式 */
+:global(.dragging-active) {
+  cursor: grabbing !important;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    flex-direction: column;
+  }
+  .section {
+    margin-bottom: 20px;
+  }
+  
+  .container {
+    width: 95%;
+    padding: 10px;
+  }
+}
+
+.standardEvent {
+  background-color: #6c757d;
+  cursor: default;
+}
+
+.standardEvent:hover {
+  transform: none;
+  box-shadow: none;
+  background-color: #5a6268;
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 5px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+  color: #dc3545;
+}
+
+.deleteButton:hover {
+  opacity: 1;
+  color: #ff0000;
+}
+
+/* 删除确认弹窗 */
+.deleteConfirmModal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 500px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.deleteConfirmHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.deleteConfirmTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #dc3545;
+}
+
+.deleteConfirmContent {
+  margin-bottom: 20px;
+}
+
+.deleteConfirmButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelDeleteButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirmDeleteButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirmDeleteButton:hover {
+  background-color: #c82333;
+}
+
+.eventToDelete {
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border-left: 4px solid #dc3545;
+}
+
+.compositionList {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.compositionList li {
+  margin-bottom: 5px;
+}
+
+.warningText {
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.eventActions {
+  display: flex;
+  gap: 5px;
+}
+
+.eventWithActions {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  justify-content: space-between;
+}
