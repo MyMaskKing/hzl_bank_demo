@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/Bank.module.css';
+import TagLabels from './TagLabels';
 
 const ChatSection = () => {
   const [message, setMessage] = useState('');
@@ -317,26 +318,31 @@ const ChatSection = () => {
           </button>
         </div>
       </div>
-      <div 
-        className={styles.chatContainer} 
-        id="chatContainer" 
-        ref={chatContainerRef}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {chatMessages.length === 0 && (
-          <div className={styles.chatAssistant}>
-            <span role="img" aria-label="robot" style={{ marginRight: '10px', fontSize: '20px' }}>🤖</span>
-            <span>智能银行助手 - 您好！请问有什么可以帮您？</span>
-          </div>
-        )}
-        
-        {chatMessages.map(message => (
-          <div key={message.id} className={styles.message}>
-            {renderMessage(message)}
-          </div>
-        ))}
+
+      {/* 添加标签组件 */}
+      <div className={styles.chatSectionWrapper}>
+        <TagLabels />
+        <div 
+          className={styles.chatContainer} 
+          id="chatContainer" 
+          ref={chatContainerRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {chatMessages.length === 0 && (
+            <div className={styles.chatAssistant}>
+              <span role="img" aria-label="robot" style={{ marginRight: '10px', fontSize: '20px' }}>🤖</span>
+              <span>智能银行助手 - 您好！请问有什么可以帮您？</span>
+            </div>
+          )}
+          
+          {chatMessages.map(message => (
+            <div key={message.id} className={styles.message}>
+              {renderMessage(message)}
+            </div>
+          ))}
+        </div>
       </div>
       
       <div className={styles.chatInput}>
