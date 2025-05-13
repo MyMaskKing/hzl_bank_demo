@@ -1,1 +1,38 @@
-/node_modules
+# Java & Maven
+/ai-service/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IntelliJ IDEA
+/ai-service/.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 环境变量/配置
+.env
+*.local
+
+# Node.js
+/node_modules/
+
+# 临时文件
+*.swp
+*.swo
+~*
+
+# 测试报告
+/test-output/
+coverage/
+
+# 其他
+*.bak
+*.tmp
+*.log
