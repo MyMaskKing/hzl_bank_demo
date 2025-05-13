@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from '../styles/Bank.module.css';
 import TagLabels from './TagLabels';
 
@@ -8,6 +8,73 @@ const ChatSection = () => {
   const [eventCompositions, setEventCompositions] = useState({});
   const [processedEvents, setProcessedEvents] = useState(new Set()); // 跟踪已处理的事件
   const chatContainerRef = useRef(null);
+  
+  // 用ref保存eventCompositions，避免useCallback依赖
+  const eventCompositionsRef = useRef(eventCompositions);
+  useEffect(() => { eventCompositionsRef.current = eventCompositions; }, [eventCompositions]);
+
+  const showEventInChat = useCallback((eventName) => {
+    const compositions = eventCompositionsRef.current;
+    console.log('显示事件:', eventName, '组合信息:', compositions);
+    addChatMessage('event', eventName);
+    const composition = compositions[eventName];
+    if (composition && composition.length > 0) {
+      console.log('事件组合:', composition);
+      setTimeout(() => {
+        addChatMessage('assistant', `事件 "${eventName}" 由以下组件构成：`);
+      }, 300);
+      composition.forEach((subEvent, index) => {
+        setTimeout(() => {
+          addChatMessage('event-component', subEvent);
+          const subComposition = compositions[subEvent];
+          if (subComposition && subComposition.length > 0) {
+            setTimeout(() => {
+              addChatMessage('assistant', `组件 "${subEvent}" 由以下标准事件构成：`);
+              subComposition.forEach((standardEvent, idx) => {
+                setTimeout(() => {
+                  addChatMessage('standard-event', standardEvent);
+                }, idx * 200);
+              });
+            }, 300);
+          }
+        }, (index + 1) * 400);
+      });
+      setTimeout(() => {
+        addChatMessage('assistant', `事件 "${eventName}" 已执行完成。`);
+      }, (composition.length + 1) * 500);
+    } else {
+      setTimeout(() => {
+        addChatMessage('assistant', `事件 "${eventName}" 是基础事件，已直接执行。`);
+      }, 300);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+      chatContainer.classList.remove(styles.dragOver);
+    }
+    const eventName = e.dataTransfer.getData('text/plain');
+    if (eventName) {
+      const eventKey = `${eventName}-${Date.now()}`;
+      if (!processedEvents.has(eventKey)) {
+        const updatedProcessedEvents = new Set(processedEvents);
+        updatedProcessedEvents.add(eventKey);
+        setProcessedEvents(updatedProcessedEvents);
+        setTimeout(() => {
+          setProcessedEvents(prev => {
+            const updated = new Set(prev);
+            updated.delete(eventKey);
+            return updated;
+          });
+        }, 1000);
+        showEventInChat(eventName);
+      }
+    } else {
+      addChatMessage('assistant', '标准事件不允许直接使用，请将其添加到银行事件中再使用。');
+    }
+  }, [processedEvents, showEventInChat]);
   
   // 从本地存储加载事件组合信息
   useEffect(() => {
@@ -82,7 +149,7 @@ const ChatSection = () => {
         chatContainer.removeEventListener('drop', handleDrop);
       }
     };
-  }, [processedEvents]);
+  }, [processedEvents, handleDrop, showEventInChat]);
   
   // 保存聊天记录到本地存储
   useEffect(() => {
@@ -122,57 +189,70 @@ const ChatSection = () => {
     }
   };
   
-  const handleDrop = (e) => {
-    e.preventDefault();
-    
-    // 移除拖拽目标高亮
-    const chatContainer = document.getElementById('chatContainer');
-    if (chatContainer) {
-      chatContainer.classList.remove(styles.dragOver);
-    }
-    
-    // 获取拖拽的事件名称
-    const eventName = e.dataTransfer.getData('text/plain');
-    console.log('接收到拖放事件:', eventName);
-    
-    // 检查是否为有效事件名称（空字符串表示可能是标准事件，不允许拖入）
-    if (eventName) {
-      // 创建一个唯一的事件标识符，避免短时间内重复处理
-      const eventKey = `${eventName}-${Date.now()}`;
-      if (!processedEvents.has(eventKey)) {
-        const updatedProcessedEvents = new Set(processedEvents);
-        updatedProcessedEvents.add(eventKey);
-        setProcessedEvents(updatedProcessedEvents);
-        
-        // 在短暂延迟后从处理集合中移除
-        setTimeout(() => {
-          setProcessedEvents(prev => {
-            const updated = new Set(prev);
-            updated.delete(eventKey);
-            return updated;
-          });
-        }, 1000);
-        
-        showEventInChat(eventName);
-      }
-    } else {
-      addChatMessage('assistant', '标准事件不允许直接使用，请将其添加到银行事件中再使用。');
-    }
-  };
-  
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   };
   
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim()) {
       addChatMessage('user', message);
+      const userMsg = message;
       setMessage('');
-      
-      // 简单的机器人响应
-      setTimeout(() => {
-        addChatMessage('assistant', '已收到您的消息，请问还有什么可以帮助您的吗？');
-      }, 500);
+
+      try {
+        // 使用fetch流式消费后端AI聊天流接口
+        const response = await fetch('http://localhost:8080/api/chat/stream', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: userMsg }),
+        });
+        if (!response.ok || !response.body) {
+          throw new Error('AI服务请求失败');
+        }
+        // 逐步拼接AI回复
+        const reader = response.body.getReader();
+        let aiContent = '';
+        let done = false;
+        addChatMessage('assistant', '');
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
+          if (value) {
+            const chunk = new TextDecoder('utf-8').decode(value);
+            // 先收集所有内容再统一setChatMessages，避免forEach闭包警告
+            let newContent = aiContent;
+            let updated = false;
+            chunk.split('\n').forEach(line => {
+              if (line.trim()) {
+                try {
+                  const data = JSON.parse(line);
+                  if (data && data.content) {
+                    newContent += data.content;
+                    updated = true;
+                  } else if (data && data.data && data.data.content) {
+                    newContent += data.data.content;
+                    updated = true;
+                  }
+                } catch (e) {
+                  // 忽略解析异常
+                }
+              }
+            });
+            if (updated) {
+              aiContent = newContent;
+              setChatMessages(prev => prev.map((msg, idx) =>
+                idx === prev.length - 1 && msg.type === 'assistant'
+                  ? { ...msg, content: aiContent }
+                  : msg
+              ));
+            }
+          }
+        }
+      } catch (error) {
+        addChatMessage('assistant', 'AI服务异常: ' + error.message);
+      }
     }
   };
   
@@ -196,54 +276,6 @@ const ChatSection = () => {
     addChatMessage('assistant', '聊天记录已清空。有什么可以帮助您的吗？');
   };
   
-  // 显示事件在聊天窗口
-  const showEventInChat = (eventName) => {
-    console.log('显示事件:', eventName, '组合信息:', eventCompositions);
-    
-    // 添加事件到聊天窗口
-    addChatMessage('event', eventName);
-    
-    // 如果有子事件，则显示子事件
-    const composition = eventCompositions[eventName];
-    if (composition && composition.length > 0) {
-      console.log('事件组合:', composition);
-      
-      setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 由以下组件构成：`);
-      }, 300);
-      
-      composition.forEach((subEvent, index) => {
-        setTimeout(() => {
-          addChatMessage('event-component', subEvent);
-          
-          // 递归检查子事件的组成
-          const subComposition = eventCompositions[subEvent];
-          if (subComposition && subComposition.length > 0) {
-            setTimeout(() => {
-              addChatMessage('assistant', `组件 "${subEvent}" 由以下标准事件构成：`);
-              
-              subComposition.forEach((standardEvent, idx) => {
-                setTimeout(() => {
-                  addChatMessage('standard-event', standardEvent);
-                }, idx * 200);
-              });
-            }, 300);
-          }
-        }, (index + 1) * 400);
-      });
-      
-      // 执行完成提示
-      setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 已执行完成。`);
-      }, (composition.length + 1) * 500);
-    } else {
-      // 无子组件事件
-      setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 是基础事件，已直接执行。`);
-      }, 300);
-    }
-  };
-  
   // 添加消息到聊天窗口
   const addChatMessage = (type, content) => {
     const newMessage = {
@@ -258,6 +290,12 @@ const ChatSection = () => {
   
   // 渲染不同类型的消息
   const renderMessage = (message) => {
+    // 过滤AI助手消息中的<think>标签内容
+    const filterThinkTag = (text) => {
+      if (!text) return '';
+      // 去除所有<think>...</think>内容
+      return text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/\n{2,}/g, '\n').trim();
+    };
     switch (message.type) {
       case 'user':
         return (
@@ -269,7 +307,7 @@ const ChatSection = () => {
       case 'assistant':
         return (
           <div className={styles.assistantMessage}>
-            <div className={styles.messageContent}>{message.content}</div>
+            <div className={styles.messageContent}>{filterThinkTag(message.content)}</div>
             <div className={styles.messageTime}>{message.timestamp}</div>
           </div>
         );

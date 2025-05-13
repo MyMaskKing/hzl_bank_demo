@@ -27,9 +27,16 @@
 
     <dependencies>
         <!-- Spring Boot -->
+        <!-- 删除spring-boot-starter-web依赖，只保留webflux -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         
         <!-- Spring Boot WebFlux -->
