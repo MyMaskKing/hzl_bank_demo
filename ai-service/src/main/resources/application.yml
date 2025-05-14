@@ -1,1 +1,52 @@
- 
+# Server Configuration
+server:
+  port: 8080
+
+# Application Configuration
+spring:
+  application:
+    name: ai-service
+  
+  # Ollama Configuration
+  ai:
+    ollama:
+      base-url: http://192.168.162.80:11434
+      temperature: 0.7
+      init:
+        pull-model-strategy: never
+      chat:
+        model: deepseek-r1:1.5b
+      embedding:
+        options:
+          model: nomic-embed-text
+    model:
+      embedding: ollama
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: bank_knowledge
+#        prefix: embedding
+        dimensions: 768
+        enabled: true
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: 192.168.162.40
+      port: 6379
+      password: cyj123456
+
+# Logging Configuration
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    com.bank.aiservice: DEBUG
+
+# CORS Configuration (Commented out)
+# spring:
+#   webflux:
+#     cors:
+#       allowed-origins: "*"
+#       allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+#       allowed-headers: "*"
+#       max-age: 3600 
