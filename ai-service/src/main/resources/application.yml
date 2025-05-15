@@ -39,6 +39,7 @@ spring:
       port: 6379
       password: cyj123456
       client-type: jedis
+      database: 0
 
 # Logging Configuration
 logging:
