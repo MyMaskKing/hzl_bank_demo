@@ -10,7 +10,7 @@ spring:
   # Ollama Configuration
   ai:
     ollama:
-      base-url: http://192.168.162.80:11434
+      base-url: http://localhost:11434
       temperature: 0.7
       init:
         pull-model-strategy: never
@@ -19,13 +19,16 @@ spring:
       embedding:
         options:
           model: nomic-embed-text
+      client:
+        connection-timeout: 30000
+        read-timeout: 30000
     model:
       embedding: ollama
     vectorstore:
       redis:
         initialize-schema: true
         index-name: bank_knowledge
-#        prefix: embedding
+        prefix: embedding
         dimensions: 768
         enabled: true
   
@@ -35,12 +38,21 @@ spring:
       host: 192.168.162.40
       port: 6379
       password: cyj123456
+      client-type: jedis
 
 # Logging Configuration
 logging:
   level:
-    org.springframework.ai: DEBUG
+    root: INFO
+    org.springframework: DEBUG
+    org.springframework.ai: TRACE
+    org.springframework.data.redis: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
     com.bank.aiservice: DEBUG
+    org.springframework.context.annotation: TRACE
+    org.springframework.beans.factory.support: DEBUG
+    org.springframework.web.client: TRACE
+    org.springframework.ai.ollama: TRACE
 
 # CORS Configuration (Commented out)
 # spring:
@@ -50,3 +62,5 @@ logging:
 #       allowed-methods: GET,POST,PUT,DELETE,OPTIONS
 #       allowed-headers: "*"
 #       max-age: 3600 
+
+debug: true 
