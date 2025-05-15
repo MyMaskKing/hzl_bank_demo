@@ -43,8 +43,6 @@ spring:
 
 # Logging Configuration
 # Logging Configuration
-logging.level.org.springframework.ai=DEBUG
-logging.level.com.bank.aiservice=DEBUG
 logging:
   level:
     root: INFO
