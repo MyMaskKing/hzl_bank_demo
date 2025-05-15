@@ -42,7 +42,6 @@ spring:
       database: 0
 
 # Logging Configuration
-# Logging Configuration
 logging:
   level:
     root: INFO
@@ -51,6 +50,14 @@ logging:
     org.springframework.boot.autoconfigure: DEBUG
     com.bank.aiservice: DEBUG
     org.springframework.beans.factory.support: DEBUG
+
+  file:
+    name: logs/ai-service.log
+    max-size: 10MB
+    max-history: 30
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 # CORS Configuration (Commented out)
 # spring:
