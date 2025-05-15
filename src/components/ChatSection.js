@@ -198,7 +198,7 @@ const ChatSection = () => {
       addChatMessage('user', message);
       const userMsg = message;
       setMessage('');
-
+      
       try {
         // 使用fetch流式消费后端AI聊天流接口
         const response = await fetch('http://localhost:8080/api/chat/stream', {
