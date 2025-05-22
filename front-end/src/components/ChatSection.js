@@ -6,46 +6,93 @@ const ChatSection = () => {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [eventCompositions, setEventCompositions] = useState({});
+  const [eventFlowData, setEventFlowData] = useState({});
   const [processedEvents, setProcessedEvents] = useState(new Set()); // 跟踪已处理的事件
   const chatContainerRef = useRef(null);
   
-  // 用ref保存eventCompositions，避免useCallback依赖
+  // 用ref保存eventCompositions和eventFlowData，避免useCallback依赖
   const eventCompositionsRef = useRef(eventCompositions);
-  useEffect(() => { eventCompositionsRef.current = eventCompositions; }, [eventCompositions]);
+  const eventFlowDataRef = useRef(eventFlowData);
+  useEffect(() => { 
+    eventCompositionsRef.current = eventCompositions; 
+  }, [eventCompositions]);
+  useEffect(() => { 
+    eventFlowDataRef.current = eventFlowData; 
+  }, [eventFlowData]);
 
   const showEventInChat = useCallback((eventName) => {
     const compositions = eventCompositionsRef.current;
+    const flowData = eventFlowDataRef.current;
     console.log('显示事件:', eventName, '组合信息:', compositions);
+    
+    // 添加事件到聊天
     addChatMessage('event', eventName);
-    const composition = compositions[eventName];
-    if (composition && composition.length > 0) {
-      console.log('事件组合:', composition);
+    
+    // 如果有流程数据，显示流程结构
+    const flow = flowData[eventName];
+    if (flow && flow.nodes && flow.nodes.length > 0) {
       setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 由以下组件构成：`);
+        addChatMessage('assistant', `事件 "${eventName}" 的执行流程开始：`);
       }, 300);
-      composition.forEach((subEvent, index) => {
+      
+      // 按照流程图的执行顺序依次显示节点
+      // 这里简化处理，按照节点创建的顺序显示
+      flow.nodes.forEach((node, index) => {
+        const eventName = node.data.event;
         setTimeout(() => {
-          addChatMessage('event-component', subEvent);
-          const subComposition = compositions[subEvent];
+          addChatMessage('event-component', eventName);
+          
+          // 如果这个组件也是复合事件，显示其子组件
+          const subComposition = compositions[eventName];
           if (subComposition && subComposition.length > 0) {
             setTimeout(() => {
-              addChatMessage('assistant', `组件 "${subEvent}" 由以下标准事件构成：`);
-              subComposition.forEach((standardEvent, idx) => {
+              addChatMessage('assistant', `组件 "${eventName}" 由以下事件构成：`);
+              subComposition.forEach((subEvent, idx) => {
                 setTimeout(() => {
-                  addChatMessage('standard-event', standardEvent);
+                  addChatMessage('standard-event', subEvent);
                 }, idx * 200);
               });
             }, 300);
           }
-        }, (index + 1) * 400);
+        }, (index + 1) * 500);
       });
+      
       setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 已执行完成。`);
-      }, (composition.length + 1) * 500);
-    } else {
-      setTimeout(() => {
-        addChatMessage('assistant', `事件 "${eventName}" 是基础事件，已直接执行。`);
-      }, 300);
+        addChatMessage('assistant', `事件 "${eventName}" 的流程执行完成。`);
+      }, (flow.nodes.length + 1) * 600);
+    } 
+    // 如果没有流程数据但有组合信息，显示线性结构
+    else {
+      const composition = compositions[eventName];
+      if (composition && composition.length > 0) {
+        console.log('事件组合:', composition);
+        setTimeout(() => {
+          addChatMessage('assistant', `事件 "${eventName}" 由以下组件构成：`);
+        }, 300);
+        composition.forEach((subEvent, index) => {
+          setTimeout(() => {
+            addChatMessage('event-component', subEvent);
+            const subComposition = compositions[subEvent];
+            if (subComposition && subComposition.length > 0) {
+              setTimeout(() => {
+                addChatMessage('assistant', `组件 "${subEvent}" 由以下标准事件构成：`);
+                subComposition.forEach((standardEvent, idx) => {
+                  setTimeout(() => {
+                    addChatMessage('standard-event', standardEvent);
+                  }, idx * 200);
+                });
+              }, 300);
+            }
+          }, (index + 1) * 400);
+        });
+        setTimeout(() => {
+          addChatMessage('assistant', `事件 "${eventName}" 已执行完成。`);
+        }, (composition.length + 1) * 500);
+      } else {
+        setTimeout(() => {
+          addChatMessage('assistant', `事件 "${eventName}" 是基础事件，已直接执行。`);
+        }, 300);
+      }
     }
   }, []);
 
@@ -55,8 +102,17 @@ const ChatSection = () => {
     if (chatContainer) {
       chatContainer.classList.remove(styles.dragOver);
     }
+    
     const eventName = e.dataTransfer.getData('text/plain');
+    const eventType = e.dataTransfer.getData('application/eventType');
+    
     if (eventName) {
+      // 如果是标准事件且不允许直接使用，则显示提示
+      if (eventType === 'standard') {
+        addChatMessage('assistant', '标准事件不允许直接使用，请将其添加到银行事件中再使用。');
+        return;
+      }
+      
       const eventKey = `${eventName}-${Date.now()}`;
       if (!processedEvents.has(eventKey)) {
         const updatedProcessedEvents = new Set(processedEvents);
@@ -71,17 +127,21 @@ const ChatSection = () => {
         }, 1000);
         showEventInChat(eventName);
       }
-    } else {
-      addChatMessage('assistant', '标准事件不允许直接使用，请将其添加到银行事件中再使用。');
     }
   }, [processedEvents, showEventInChat]);
   
-  // 从本地存储加载事件组合信息
+  // 从本地存储加载事件组合信息和流程数据
   useEffect(() => {
-    const loadEventCompositions = () => {
+    const loadEventData = () => {
       const savedEventCompositions = localStorage.getItem('eventCompositions');
+      const savedEventFlowData = localStorage.getItem('eventFlowData');
+      
       if (savedEventCompositions) {
         setEventCompositions(JSON.parse(savedEventCompositions));
+      }
+      
+      if (savedEventFlowData) {
+        setEventFlowData(JSON.parse(savedEventFlowData));
       }
     };
     
@@ -94,16 +154,22 @@ const ChatSection = () => {
     };
     
     // 初始加载
-    loadEventCompositions();
+    loadEventData();
     loadChatMessages();
     
     // 监听自定义事件 - 当点击ActionButton时触发
-    const handleShowEventInChat = (e) => {
-      const { eventName } = e.detail;
-      console.log('接收到showEventInChat事件:', eventName);
+    const handleAddToChatEvent = (e) => {
+      const { text, eventType } = e.detail;
+      console.log('接收到addToChatEvent事件:', text, eventType);
+      
+      // 如果是标准事件且不允许直接使用，则显示提示
+      if (eventType === 'standard') {
+        addChatMessage('assistant', '标准事件不允许直接使用，请将其添加到银行事件中再使用。');
+        return;
+      }
       
       // 防止短时间内重复处理相同事件
-      const eventKey = `${eventName}-${Date.now()}`;
+      const eventKey = `${text}-${Date.now()}`;
       if (!processedEvents.has(eventKey)) {
         const updatedProcessedEvents = new Set(processedEvents);
         updatedProcessedEvents.add(eventKey);
@@ -118,18 +184,18 @@ const ChatSection = () => {
           });
         }, 1000);
         
-        showEventInChat(eventName);
+        showEventInChat(text);
       }
     };
     
-    // 监听storage变化，以便在其他组件修改事件组合时更新
+    // 监听storage变化，以便在其他组件修改事件时更新
     const handleStorageChange = (e) => {
-      if (e.key === 'eventCompositions') {
-        loadEventCompositions();
+      if (e.key === 'eventCompositions' || e.key === 'eventFlowData') {
+        loadEventData();
       }
     };
     
-    document.addEventListener('showEventInChat', handleShowEventInChat);
+    document.addEventListener('addToChatEvent', handleAddToChatEvent);
     window.addEventListener('storage', handleStorageChange);
     
     // 设置拖拽相关事件监听
@@ -137,16 +203,18 @@ const ChatSection = () => {
     if (chatContainer) {
       chatContainer.addEventListener('dragover', handleDragOver);
       chatContainer.addEventListener('drop', handleDrop);
+      chatContainer.addEventListener('dragleave', handleDragLeave);
     }
     
     return () => {
       // 组件卸载时移除事件监听
-      document.removeEventListener('showEventInChat', handleShowEventInChat);
+      document.removeEventListener('addToChatEvent', handleAddToChatEvent);
       window.removeEventListener('storage', handleStorageChange);
       
       if (chatContainer) {
         chatContainer.removeEventListener('dragover', handleDragOver);
         chatContainer.removeEventListener('drop', handleDrop);
+        chatContainer.removeEventListener('dragleave', handleDragLeave);
       }
     };
   }, [processedEvents, handleDrop, showEventInChat]);
@@ -221,10 +289,14 @@ const ChatSection = () => {
           done = streamDone;
           if (value) {
             const chunk = new TextDecoder('utf-8').decode(value);
-            // 先收集所有内容再统一setChatMessages，避免forEach闭包警告
+            // 先收集所有内容再统一更新
             let newContent = aiContent;
             let updated = false;
-            chunk.split('\n').forEach(line => {
+            
+            // 处理每一行数据
+            const lines = chunk.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
               if (line.trim()) {
                 try {
                   const data = JSON.parse(line);
@@ -239,14 +311,24 @@ const ChatSection = () => {
                   // 忽略解析异常
                 }
               }
-            });
+            }
+            
             if (updated) {
-              aiContent = newContent;
-              setChatMessages(prev => prev.map((msg, idx) =>
-                idx === prev.length - 1 && msg.type === 'assistant'
-                  ? { ...msg, content: aiContent }
-                  : msg
-              ));
+              // 使用不依赖循环变量的方式更新状态
+              const currentContent = newContent; // 创建一个临时变量
+              aiContent = currentContent;
+              
+              // 使用函数式更新，避免闭包问题
+              setChatMessages(prev => {
+                const lastMessage = prev[prev.length - 1];
+                if (lastMessage && lastMessage.type === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...lastMessage, content: currentContent }
+                  ];
+                }
+                return prev;
+              });
             }
           }
         }

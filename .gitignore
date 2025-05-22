@@ -21,7 +21,19 @@ Thumbs.db
 *.local
 
 # Node.js
-/node_modules/
+/front-end/node_modules/
+/front-end/build/
+/front-end/coverage/
+/front-end/.pnp
+/front-end/.pnp.js
+/front-end/.env
+/front-end/.env.local
+/front-end/.env.development.local
+/front-end/.env.test.local
+/front-end/.env.production.local
+/front-end/npm-debug.log*
+/front-end/yarn-debug.log*
+/front-end/yarn-error.log*
 
 # 临时文件
 *.swp
